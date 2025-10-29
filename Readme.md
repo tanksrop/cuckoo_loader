@@ -43,6 +43,10 @@ The new default root password is: `gtvh4ckr`
 
 Note: This has only been ran on an older linux laptop. Millage may vary but feel free to open issues.
 
+# Issues building
+The toolchain was compiled for 32 bit systems. If you are trying to compile on 64bit systems, the following guide may help:
+https://devnodes.in/blog/linux/arm-no-such-a-file-or-directory/
+
 ## What next
 Well.. you have root. There is a lot you can do from here. Please remember to change the default password. 
 
