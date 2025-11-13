@@ -11,14 +11,17 @@ packages=(
     "zlib1g:i386"
 )
 
-for pkg in "${packages[@]}"; do
-    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
-        echo "Package '$pkg' is not installed. Exiting."
-        exit 1
-    fi
-done
-
-echo "All packages are installed."
+if command -v dpkg >/dev/null 2>&1; then
+    for pkg in "${packages[@]}"; do
+        if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+            echo "Package '$pkg' is not installed. Exiting."
+            exit 1
+        fi
+    done
+    echo "All packages are installed."
+else
+    echo "Non-Debian system detected. Skipping package checks."
+fi
 
 mkdir -p build
 cd ./build
