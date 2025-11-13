@@ -1,29 +1,68 @@
 #/bin/bash
+packages=(
+    "build-essential"
+    "git"
+    "cmake"
+    "u-boot-tools"
+    "libusb-1.0-0-dev"
+    "pkg-config"
+    "libc6:i386"
+    "libstdc++6:i386"
+    "zlib1g:i386"
+)
+
+for pkg in "${packages[@]}"; do
+    if ! dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null | grep -q "install ok installed"; then
+        echo "Package '$pkg' is not installed. Exiting."
+        exit 1
+    fi
+done
+
+echo "All packages are installed."
+
 mkdir -p build
 cd ./build
 
 echo "[I] - Downloading Nest toolchain."
 mkdir -p  toolchain
 cd toolchain
-wget http://files.chumby.com/toolchain/arm-2008q3-72-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+wget -c http://files.chumby.com/toolchain/arm-2008q3-72-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
 echo "[I] - Extracting and setting up toolchain."
-tar xjvf arm-2008q3-72-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
-rm arm-2008q3-72-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+tar --skip-old-files -xjvf arm-2008q3-72-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 PATH=$PATH:`pwd`/arm-2008q3/bin
 echo $PATH
 cd ..
 
-echo "[I] - Downloading original NestDfuAttack from GTVHackers"
-wget https://github.com/exploiteers/NestDFUAttack/archive/refs/heads/master.tar.gz
-tar -xvf master.tar.gz
-rm master.tar.gz
+if [ -d "NestDFUAttack-master/.git" ]; then
+    echo "[I] - NestDfuAttack exists, updating..."
+    cd NestDFUAttack-master
+    git pull
+    cd ..
+else
+    echo "[I] - Cloning NestDfuAttack..."
+    git clone https://github.com/exploiteers/NestDFUAttack NestDFUAttack-master
+fi
 
-echo "[I] - Downloading x-loader from google..."
-git clone  https://nest-open-source.googlesource.com/nest-learning-thermostat/5.9.4/x-loader
+if [ -d "x-loader/.git" ]; then
+    echo "[I] - x-loader exists, updating..."
+    cd x-loader
+    git pull
+    cd ..
+else
+    echo "[I] - Cloning x-loader..."
+    git clone https://nest-open-source.googlesource.com/nest-learning-thermostat/5.9.4/x-loader
+fi
 
-echo "[I] - Downloading special version of omap_loader"
-git clone https://github.com/ajb142/omap_loader.git
+if [ -d "omap_loader/.git" ]; then
+    echo "[I] - omap_loader exists, updating..."
+    cd omap_loader
+    git pull
+    cd ..
+else
+    echo "[I] - Cloning omap_loader..."
+    git clone https://github.com/ajb142/omap_loader.git
+fi
 
 echo "[I] - Cross compiling x-loader."
 cd x-loader/x-loader
